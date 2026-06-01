@@ -206,6 +206,11 @@ int CudaRasterizer::Rasterizer::forward(
 	const float* shs,
 	const float* colors_precomp,
 	const float* opacities,
+	// new start
+	const float* beta_Ds,
+	const float* beta_Bs,
+	const float* Bs,
+	// new end
 	const float* scales,
 	const float scale_modifier,
 	const float* rotations,
@@ -247,13 +252,18 @@ int CudaRasterizer::Rasterizer::forward(
 	}
 
 	// Run preprocessing per-Gaussian (transformation, bounding, conversion of SHs to RGB)
-	CHECK_CUDA(FORWARD::preprocess(
+	CHECK_CUDA(FORWARD::preprocess( 
 		P, D, M,
 		means3D,
 		(glm::vec3*)scales,
 		scale_modifier,
 		(glm::vec4*)rotations,
 		opacities,
+		//new start
+		(glm::vec3*)beta_Ds,
+		(glm::vec3*)beta_Bs,
+		(glm::vec3*)Bs,
+		//new end
 		shs,
 		geomState.clamped,
 		cov3D_precomp,
@@ -350,6 +360,11 @@ void CudaRasterizer::Rasterizer::backward(
 	const float* shs,
 	const float* colors_precomp,
 	const float* opacities,
+	//new start
+	const float* beta_Ds,
+	const float* beta_Bs,
+	const float* Bs, 
+	//
 	const float* scales,
 	const float scale_modifier,
 	const float* rotations,
@@ -367,6 +382,11 @@ void CudaRasterizer::Rasterizer::backward(
 	float* dL_dmean2D,
 	float* dL_dconic,
 	float* dL_dopacity,
+	//new 
+    float* dL_dbeta_Ds,
+	float* dL_dbeta_Bs,
+	float* dL_dBs,
+	//
 	float* dL_dcolor,
 	float* dL_dinvdepth,
 	float* dL_dmean3D,
@@ -421,12 +441,18 @@ void CudaRasterizer::Rasterizer::backward(
 	// given to us or a scales/rot pair? If precomputed, pass that. If not,
 	// use the one we computed ourselves.
 	const float* cov3D_ptr = (cov3D_precomp != nullptr) ? cov3D_precomp : geomState.cov3D;
-	CHECK_CUDA(BACKWARD::preprocess(P, D, M,
+	CHECK_CUDA(BACKWARD::preprocess(
+		P, D, M,
 		(float3*)means3D,
 		radii,
 		shs,
 		geomState.clamped,
 		opacities,
+		//new start
+		(glm::vec3*)beta_Ds,
+		(glm::vec3*)beta_Bs,
+		(glm::vec3*)Bs, 
+		//
 		(glm::vec3*)scales,
 		(glm::vec4*)rotations,
 		scale_modifier,
@@ -440,6 +466,11 @@ void CudaRasterizer::Rasterizer::backward(
 		dL_dconic,
 		dL_dinvdepth,
 		dL_dopacity,
+		//new
+        (glm::vec3*)dL_dbeta_Ds,
+        (glm::vec3*)dL_dbeta_Bs,
+        (glm::vec3*)dL_dBs,
+		//
 		(glm::vec3*)dL_dmean3D,
 		dL_dcolor,
 		dL_dcov3D,

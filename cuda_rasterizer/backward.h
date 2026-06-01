@@ -47,6 +47,11 @@ namespace BACKWARD
 		const float* shs,
 		const bool* clamped,
 		const float* opacities,
+		//new start
+		const glm::vec3* beta_Ds,
+		const glm::vec3* beta_Bs,
+		const glm::vec3* Bs,
+		//
 		const glm::vec3* scales,
 		const glm::vec4* rotations,
 		const float scale_modifier,
@@ -60,6 +65,11 @@ namespace BACKWARD
 		const float* dL_dconics,
 		const float* dL_dinvdepth,
 		float* dL_dopacity,
+		//new start
+		glm::vec3* dL_dbeta_Ds,
+		glm::vec3* dL_dbeta_Bs,
+		glm::vec3* dL_dBs,
+		//
 		glm::vec3* dL_dmeans,
 		float* dL_dcolor,
 		float* dL_dcov3D,

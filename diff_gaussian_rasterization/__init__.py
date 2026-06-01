@@ -24,6 +24,11 @@ def rasterize_gaussians(
     sh,
     colors_precomp,
     opacities,
+    # new start
+    beta_Ds,
+    beta_Bs,
+    Bs,
+    # new end
     scales,
     rotations,
     cov3Ds_precomp,
@@ -35,6 +40,11 @@ def rasterize_gaussians(
         sh,
         colors_precomp,
         opacities,
+        # new start
+        beta_Ds,
+        beta_Bs,
+        Bs,
+        # new end
         scales,
         rotations,
         cov3Ds_precomp,
@@ -50,6 +60,11 @@ class _RasterizeGaussians(torch.autograd.Function):
         sh,
         colors_precomp,
         opacities,
+        # new start
+        beta_Ds,
+        beta_Bs,
+        Bs,
+        # new end
         scales,
         rotations,
         cov3Ds_precomp,
@@ -62,6 +77,11 @@ class _RasterizeGaussians(torch.autograd.Function):
             means3D,
             colors_precomp,
             opacities,
+            # new start
+            beta_Ds,
+            beta_Bs,
+            Bs,
+            # new end
             scales,
             rotations,
             raster_settings.scale_modifier,
@@ -86,7 +106,8 @@ class _RasterizeGaussians(torch.autograd.Function):
         # Keep relevant tensors for backward
         ctx.raster_settings = raster_settings
         ctx.num_rendered = num_rendered
-        ctx.save_for_backward(colors_precomp, means3D, scales, rotations, cov3Ds_precomp, radii, sh, opacities, geomBuffer, binningBuffer, imgBuffer)
+        # new change
+        ctx.save_for_backward(colors_precomp, means3D, scales, rotations, cov3Ds_precomp, radii, sh, opacities, beta_Ds, beta_Bs, Bs, geomBuffer, binningBuffer, imgBuffer)
         return color, radii, invdepths
 
     @staticmethod
@@ -95,7 +116,8 @@ class _RasterizeGaussians(torch.autograd.Function):
         # Restore necessary values from context
         num_rendered = ctx.num_rendered
         raster_settings = ctx.raster_settings
-        colors_precomp, means3D, scales, rotations, cov3Ds_precomp, radii, sh, opacities, geomBuffer, binningBuffer, imgBuffer = ctx.saved_tensors
+        # new change
+        colors_precomp, means3D, scales, rotations, cov3Ds_precomp, radii, sh, opacities, beta_Ds, beta_Bs, Bs, geomBuffer, binningBuffer, imgBuffer = ctx.saved_tensors
 
         # Restructure args as C++ method expects them
         args = (raster_settings.bg,
@@ -103,6 +125,11 @@ class _RasterizeGaussians(torch.autograd.Function):
                 radii, 
                 colors_precomp, 
                 opacities,
+                # new start
+                beta_Ds,
+                beta_Bs,
+                Bs,
+                # new end
                 scales, 
                 rotations, 
                 raster_settings.scale_modifier, 
@@ -124,7 +151,8 @@ class _RasterizeGaussians(torch.autograd.Function):
                 raster_settings.debug)
 
         # Compute gradients for relevant tensors by invoking backward method
-        grad_means2D, grad_colors_precomp, grad_opacities, grad_means3D, grad_cov3Ds_precomp, grad_sh, grad_scales, grad_rotations = _C.rasterize_gaussians_backward(*args)        
+        # new change
+        grad_means2D, grad_colors_precomp, grad_opacities, grad_beta_Ds, grad_beta_Bs, grad_Bs, grad_means3D, grad_cov3Ds_precomp, grad_sh, grad_scales, grad_rotations = _C.rasterize_gaussians_backward(*args)        
 
         grads = (
             grad_means3D,
@@ -132,6 +160,11 @@ class _RasterizeGaussians(torch.autograd.Function):
             grad_sh,
             grad_colors_precomp,
             grad_opacities,
+            # new start
+            grad_beta_Ds,
+            grad_beta_Bs,
+            grad_Bs,
+            # new end
             grad_scales,
             grad_rotations,
             grad_cov3Ds_precomp,
@@ -171,8 +204,9 @@ class GaussianRasterizer(nn.Module):
             
         return visible
 
-    def forward(self, means3D, means2D, opacities, shs = None, colors_precomp = None, scales = None, rotations = None, cov3D_precomp = None):
-        
+    # new change
+    def forward(self, means3D, means2D, opacities, beta_Ds, beta_Bs, Bs, shs = None, colors_precomp = None, scales = None, rotations = None, cov3D_precomp = None):
+        # print("forward got:", means3D.shape, attenuation.shape)
         raster_settings = self.raster_settings
 
         if (shs is None and colors_precomp is None) or (shs is not None and colors_precomp is not None):
@@ -200,6 +234,11 @@ class GaussianRasterizer(nn.Module):
             shs,
             colors_precomp,
             opacities,
+            # new start
+            beta_Ds,
+            beta_Bs,
+            Bs,
+            # new end
             scales, 
             rotations,
             cov3D_precomp,

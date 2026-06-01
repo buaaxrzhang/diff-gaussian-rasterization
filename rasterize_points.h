@@ -21,6 +21,11 @@ RasterizeGaussiansCUDA(
 	const torch::Tensor& means3D,
     const torch::Tensor& colors,
     const torch::Tensor& opacity,
+	//new 
+	const torch::Tensor& beta_Ds,
+	const torch::Tensor& beta_Bs,
+	const torch::Tensor& Bs,
+	//
 	const torch::Tensor& scales,
 	const torch::Tensor& rotations,
 	const float scale_modifier,
@@ -38,7 +43,8 @@ RasterizeGaussiansCUDA(
 	const bool antialiasing,
 	const bool debug);
 
-std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor>
+//new change
+std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor>
  RasterizeGaussiansBackwardCUDA(
  	const torch::Tensor& background,
 	const torch::Tensor& means3D,
@@ -46,6 +52,11 @@ std::tuple<torch::Tensor, torch::Tensor, torch::Tensor, torch::Tensor, torch::Te
     const torch::Tensor& colors,
 	const torch::Tensor& scales,
 	const torch::Tensor& opacities,
+	//new 
+	const torch::Tensor& beta_Ds,
+	const torch::Tensor& beta_Bs,
+	const torch::Tensor& Bs,
+	//
 	const torch::Tensor& rotations,
 	const float scale_modifier,
 	const torch::Tensor& cov3D_precomp,

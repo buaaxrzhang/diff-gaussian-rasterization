@@ -155,6 +155,11 @@ __global__ void preprocessCUDA(int P, int D, int M,
 	const float scale_modifier,
 	const glm::vec4* rotations,
 	const float* opacities,
+	//new start
+	const glm::vec3* beta_Ds,
+	const glm::vec3* beta_Bs,
+	const glm::vec3* Bs,
+	//
 	const float* shs,
 	bool* clamped,
 	const float* cov3D_precomp,
@@ -249,9 +254,18 @@ __global__ void preprocessCUDA(int P, int D, int M,
 	if (colors_precomp == nullptr)
 	{
 		glm::vec3 result = computeColorFromSH(idx, D, M, (glm::vec3*)orig_points, *cam_pos, shs, clamped);
-		rgb[idx * C + 0] = result.x;
-		rgb[idx * C + 1] = result.y;
-		rgb[idx * C + 2] = result.z;
+		//new change
+		float depth = p_view.z;
+		glm::vec3 beta_D = beta_Ds[idx];
+		glm::vec3 beta_B = beta_Bs[idx];
+		glm::vec3 B = Bs[idx];
+		glm::vec3 modified_color;
+		for (int c = 0; c < 3; ++c) {
+			modified_color[c] = result[c] * exp(-beta_D[c] * depth) + B[c] * (1.0f - exp(-beta_B[c] * depth));
+		}
+		rgb[idx * C + 0] = modified_color.x;
+		rgb[idx * C + 1] = modified_color.y;
+		rgb[idx * C + 2] = modified_color.z;
 	}
 
 	// Store some useful helper data for the next steps.
@@ -392,7 +406,7 @@ renderCUDA(
 			out_color[ch * H * W + pix_id] = C[ch] + T * bg_color[ch];
 
 		if (invdepth)
-		invdepth[pix_id] = expected_invdepth;// 1. / (expected_depth + T * 1e3);
+			invdepth[pix_id] = expected_invdepth;// 1. / (expected_depth + T * 1e3);
 	}
 }
 
@@ -432,6 +446,11 @@ void FORWARD::preprocess(int P, int D, int M,
 	const float scale_modifier,
 	const glm::vec4* rotations,
 	const float* opacities,
+	//new start
+	const glm::vec3* beta_Ds,
+	const glm::vec3* beta_Bs,
+	const glm::vec3* Bs,
+	//
 	const float* shs,
 	bool* clamped,
 	const float* cov3D_precomp,
@@ -460,6 +479,11 @@ void FORWARD::preprocess(int P, int D, int M,
 		scale_modifier,
 		rotations,
 		opacities,
+		//new start
+		beta_Ds,
+		beta_Bs,
+		Bs,
+		//
 		shs,
 		clamped,
 		cov3D_precomp,

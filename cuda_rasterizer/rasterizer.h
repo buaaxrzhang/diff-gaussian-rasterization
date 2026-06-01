@@ -39,6 +39,11 @@ namespace CudaRasterizer
 			const float* shs,
 			const float* colors_precomp,
 			const float* opacities,
+			// new start
+			const float* beta_Ds,
+			const float* beta_Bs,
+			const float* Bs,
+			// new end
 			const float* scales,
 			const float scale_modifier,
 			const float* rotations,
@@ -62,6 +67,11 @@ namespace CudaRasterizer
 			const float* shs,
 			const float* colors_precomp,
 			const float* opacities,
+			// new start
+			const float* beta_Ds,
+			const float* beta_Bs,
+			const float* Bs, 
+			// new end
 			const float* scales,
 			const float scale_modifier,
 			const float* rotations,
@@ -79,6 +89,11 @@ namespace CudaRasterizer
 			float* dL_dmean2D,
 			float* dL_dconic,
 			float* dL_dopacity,
+			// new start
+			float* dL_dbeta_Ds,
+			float* dL_dbeta_Bs,
+			float* dL_dBs,
+			// new end
 			float* dL_dcolor,
 			float* dL_dinvdepth,
 			float* dL_dmean3D,

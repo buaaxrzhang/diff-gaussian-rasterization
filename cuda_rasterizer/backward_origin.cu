@@ -466,7 +466,6 @@ __global__ void preprocessCUDA(
 	const glm::vec3* scales,
 	const glm::vec4* rotations,
 	const float scale_modifier,
-	const float* viewmatrix, //new added
 	const float* proj,
 	const glm::vec3* campos,
 	const float3* dL_dmean2D,
@@ -513,11 +512,11 @@ __global__ void preprocessCUDA(
 	if (shs){
 		glm::vec3 result = computeColorFromSH_forward(idx, D, M, (glm::vec3*)means, *campos, shs);
 		
-		// 水下模型 gradient 反向传播部分 new add
-		// glm::vec3 pos = glm::vec3(m.x, m.y, m.z);
-		// float depth = (pos - *campos).z;
-		float3 p_view = transformPoint4x3(m, viewmatrix);
-		float depth = p_view.z;
+		// 水下模型 gradient 反向传播部分
+		//float depth = ((glm::vec3)means[idx] - *campos).z;
+		//float3 m = means[idx];
+		glm::vec3 pos = glm::vec3(m.x, m.y, m.z);
+		float depth = (pos - *campos).z;
 
 		glm::vec3 beta_D = beta_Ds[idx];
 		glm::vec3 beta_B = beta_Bs[idx];
@@ -832,7 +831,6 @@ void BACKWARD::preprocess(
 		(glm::vec3*)scales,
 		(glm::vec4*)rotations,
 		scale_modifier,
-		viewmatrix,   // new add
 		projmatrix,
 		campos,
 		(float3*)dL_dmean2D,
